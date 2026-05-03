@@ -15,25 +15,40 @@ public class Firetrap : MonoBehaviour
     private bool triggered;
     private bool active;
 
+    private Health playerHealth;
+
     private void Awake()
     {
         anim = GetComponent<Animator>();
         spriteRend = GetComponent<SpriteRenderer>();
     }
 
+    private void Update()
+    {
+        if (playerHealth != null && active)
+        {
+            playerHealth.TakeDamage(damage);
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Player"))
         {
+            playerHealth = collision.GetComponent<Health>();
+
             if (!triggered)
             {
                 StartCoroutine(ActivateFiretrap());
             }
+        }
+    }
 
-            if (active)
-            {
-                collision.GetComponent<Health>().TakeDamage(damage);
-            }
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Player"))
+        {
+            playerHealth = null;
         }
     }
 
