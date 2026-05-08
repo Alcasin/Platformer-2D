@@ -7,20 +7,24 @@ public class PlayerMovement : MonoBehaviour
     private Animator anim;
     private BoxCollider2D boxCollider;
 
-    public float speed = 5f;
-    public float jumpForce = 7f;
-    public LayerMask groundLayer;
-    public LayerMask wallLayer;
+    [Header("Movement Parameters")]
+    [SerializeField] private float speed = 5f;
+    [SerializeField] private float jumpForce = 7f;
+    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private LayerMask wallLayer;
 
-    public float wallPushX = 10f; 
-    public float wallPushY = 4f;  
-    public float wallJumpX = 3f;  
-    public float wallJumpY = 6f;
+    [Header("Wall Jump Parameters")]
+    [SerializeField] private float wallPushX = 10f;
+    [SerializeField] private float wallPushY = 4f;
+    [SerializeField] private float wallJumpX = 3f;
+    [SerializeField] private float wallJumpY = 6f;
 
     private float wallJumpCooldown;
     private float originalGravity;
-
     private float horizontalInput;
+
+    [Header("SFX")]
+    [SerializeField] private AudioClip jumpSound;
 
     private void Awake()
     {
@@ -56,17 +60,21 @@ public class PlayerMovement : MonoBehaviour
 
             if (onWall() && !isGrounded())
             {
-                body.gravityScale = 0;
                 body.linearVelocity = Vector2.zero;
+                body.gravityScale = 0;
             }
             else
             {
                 body.gravityScale = originalGravity;
             }
 
-            if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+            if (Keyboard.current != null && Keyboard.current.spaceKey.isPressed)
             {
-                Jump();
+                Jump(); 
+                if (Keyboard.current.spaceKey.wasPressedThisFrame && isGrounded())
+                {
+                    SoundManager.instance.PlaySound(jumpSound);
+                }
             }
         }
         else
@@ -84,10 +92,11 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (onWall() && !isGrounded())
         {
+            SoundManager.instance.PlaySound(jumpSound);
+
             if (horizontalInput == 0)
             {
                 body.linearVelocity = new Vector2(-Mathf.Sign(transform.localScale.x) * wallPushX, wallPushY);
-
                 transform.localScale = new Vector3(-Mathf.Sign(transform.localScale.x), transform.localScale.y, transform.localScale.z);
             }
             else
