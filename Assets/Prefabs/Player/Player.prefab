@@ -185,16 +185,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   speed: 5
   jumpForce: 20
+  coyoteTime: 0.25
+  extraJumps: 1
+  wallJumpX: 250
+  wallJumpY: 400
   groundLayer:
     serializedVersion: 2
     m_Bits: 256
   wallLayer:
     serializedVersion: 2
     m_Bits: 512
-  wallPushX: 10
-  wallPushY: 5
-  wallJumpX: 3
-  wallJumpY: 9
+  jumpSound: {fileID: 0}
 --- !u!114 &7432390803034198474
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -261,6 +262,8 @@ MonoBehaviour:
   components:
   - {fileID: 7432390803034198474}
   - {fileID: 7647269545915248035}
+  deathSound: {fileID: 0}
+  hurtSound: {fileID: 0}
 --- !u!1 &7525744297009579955
 GameObject:
   m_ObjectHideFlags: 0

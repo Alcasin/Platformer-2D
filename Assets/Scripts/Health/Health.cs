@@ -46,12 +46,14 @@ public class Health : MonoBehaviour
         {
             if (!dead)
             {
-                anim.SetTrigger("die");
+                
 
                 foreach (Behaviour component in components)
                 {
                     component.enabled = false;
                 }
+                anim.SetBool("grounded", true);
+                anim.SetTrigger("die");
 
                 dead = true;
 

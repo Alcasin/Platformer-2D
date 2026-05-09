@@ -10,21 +10,29 @@ public class PlayerMovement : MonoBehaviour
     [Header("Movement Parameters")]
     [SerializeField] private float speed = 5f;
     [SerializeField] private float jumpForce = 7f;
+
+    [Header("Coyote Time")]
+    [SerializeField] private float coyoteTime = 0.2f;
+    private float coyoteCounter;
+
+    [Header("Multiple Jumps")]
+    [SerializeField] private int extraJumps;
+    private int jumpCounter;
+
+    [Header("Wall Jumping")]
+    [SerializeField] private float wallJumpX;
+    [SerializeField] private float wallJumpY;
+
+    [Header("Layers")]
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask wallLayer;
 
-    [Header("Wall Jump Parameters")]
-    [SerializeField] private float wallPushX = 10f;
-    [SerializeField] private float wallPushY = 4f;
-    [SerializeField] private float wallJumpX = 3f;
-    [SerializeField] private float wallJumpY = 6f;
+    [Header("SFX")]
+    [SerializeField] private AudioClip jumpSound;
 
     private float wallJumpCooldown;
     private float originalGravity;
     private float horizontalInput;
-
-    [Header("SFX")]
-    [SerializeField] private AudioClip jumpSound;
 
     private void Awake()
     {
@@ -66,14 +74,28 @@ public class PlayerMovement : MonoBehaviour
             else
             {
                 body.gravityScale = originalGravity;
+
+                if (isGrounded())
+                {
+                    coyoteCounter = coyoteTime;
+                    jumpCounter = extraJumps;
+                }
+                else
+                {
+                    coyoteCounter -= Time.deltaTime;
+                }
             }
 
-            if (Keyboard.current != null && Keyboard.current.spaceKey.isPressed)
+            if (Keyboard.current != null)
             {
-                Jump(); 
-                if (Keyboard.current.spaceKey.wasPressedThisFrame && isGrounded())
+                if (Keyboard.current.spaceKey.wasPressedThisFrame)
                 {
-                    SoundManager.instance.PlaySound(jumpSound);
+                    Jump();
+                }
+
+                if (Keyboard.current.spaceKey.wasReleasedThisFrame && body.linearVelocity.y > 0)
+                {
+                    body.linearVelocity = new Vector2(body.linearVelocity.x, body.linearVelocity.y / 2);
                 }
             }
         }
@@ -85,27 +107,34 @@ public class PlayerMovement : MonoBehaviour
 
     private void Jump()
     {
-        if (isGrounded())
-        {
-            body.linearVelocity = new Vector2(body.linearVelocity.x, jumpForce);
-            anim.SetTrigger("jump");
-        }
-        else if (onWall() && !isGrounded())
-        {
-            SoundManager.instance.PlaySound(jumpSound);
+        if (coyoteCounter <= 0 && !onWall() && jumpCounter <= 0) return;
 
-            if (horizontalInput == 0)
+        SoundManager.instance.PlaySound(jumpSound);
+
+        if (onWall())
+        {
+            WallJump();
+        }
+        else
+        {
+            if (isGrounded() || coyoteCounter > 0)
             {
-                body.linearVelocity = new Vector2(-Mathf.Sign(transform.localScale.x) * wallPushX, wallPushY);
-                transform.localScale = new Vector3(-Mathf.Sign(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+                body.linearVelocity = new Vector2(body.linearVelocity.x, jumpForce);
             }
-            else
+            else if (jumpCounter > 0)
             {
-                body.linearVelocity = new Vector2(-Mathf.Sign(transform.localScale.x) * wallJumpX, wallJumpY);
+                body.linearVelocity = new Vector2(body.linearVelocity.x, jumpForce);
+                jumpCounter--;
             }
 
-            wallJumpCooldown = 0;
+            coyoteCounter = 0;
         }
+    }
+
+    private void WallJump()
+    {
+        body.AddForce(new Vector2(-Mathf.Sign(transform.localScale.x) * wallJumpX, wallJumpY));
+        wallJumpCooldown = 0;
     }
 
     private bool isGrounded()
