@@ -2,11 +2,12 @@ using UnityEngine;
 
 public class ArrowTrap : MonoBehaviour
 {
-    [SerializeField] private float attackCooldown;
+    [Header("Attack Settings")]
+    [SerializeField] private float attackCooldown = 2f;
     [SerializeField] private Transform firePoint;
     [SerializeField] private GameObject[] arrows;
 
-    [Header("SFX")]
+    [Header("Audio")]
     [SerializeField] private AudioClip arrowSound;
 
     private float cooldownTimer;
@@ -23,17 +24,34 @@ public class ArrowTrap : MonoBehaviour
 
     private void Attack()
     {
-        cooldownTimer = 0;
+        cooldownTimer = 0f;
 
-        SoundManager.instance.PlaySound(arrowSound);
+        int arrowIndex = FindAvailableArrow();
 
-        int arrowIndex = FindArrow();
+        if (arrowIndex == -1)
+        {
+            Debug.LogWarning("No available arrows in pool!");
+            return;
+        }
 
-        arrows[arrowIndex].transform.position = firePoint.position;
-        arrows[arrowIndex].GetComponent<EnemyProjectile>().ActivateProjectile();
+        GameObject arrow = arrows[arrowIndex];
+
+        arrow.transform.position = firePoint.position;
+
+        EnemyProjectile projectile = arrow.GetComponent<EnemyProjectile>();
+
+        if (projectile != null)
+        {
+            projectile.ActivateProjectile();
+        }
+
+        if (SoundManager.instance != null)
+        {
+            SoundManager.instance.PlaySound(arrowSound);
+        }
     }
 
-    private int FindArrow()
+    private int FindAvailableArrow()
     {
         for (int i = 0; i < arrows.Length; i++)
         {
@@ -42,6 +60,7 @@ public class ArrowTrap : MonoBehaviour
                 return i;
             }
         }
-        return 0;
+
+        return -1;
     }
 }

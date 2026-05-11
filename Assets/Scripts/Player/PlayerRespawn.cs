@@ -5,16 +5,24 @@ public class PlayerRespawn : MonoBehaviour
     [SerializeField] private AudioClip checkpointSound;
     private Transform currentCheckpoint;
     private Health playerHealth;
+    private UIManager uiManager;
 
     private void Awake()
     {
         playerHealth = GetComponent<Health>();
+        uiManager = Object.FindFirstObjectByType<UIManager>();
     }
 
-    public void Respawn()
+    public void CheckRespawn()
     {
-        transform.position = currentCheckpoint.position;
+        if (currentCheckpoint == null)
+        {
+            uiManager.GameOver();
+            return;
+        }
+
         playerHealth.Respawn();
+        transform.position = currentCheckpoint.position;
 
         Camera.main.GetComponent<CameraController>().MoveToNewRoom(currentCheckpoint.parent);
     }
