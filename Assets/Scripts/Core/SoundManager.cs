@@ -8,21 +8,27 @@ public class SoundManager : MonoBehaviour
 
     private void Awake()
     {
-        soundSource = GetComponent<AudioSource>();
-        musicSource = transform.GetChild(0).GetComponent<AudioSource>();
-
         if (instance == null)
         {
             instance = this;
+
+            if (transform.parent != null)
+            {
+                transform.SetParent(null);
+            }
+
             DontDestroyOnLoad(gameObject);
+
+            soundSource = GetComponent<AudioSource>();
+            musicSource = transform.GetChild(0).GetComponent<AudioSource>();
+
+            ChangeMusicVolume(0);
+            ChangeSoundVolume(0);
         }
-        else if (instance != null && instance != this)
+        else
         {
             Destroy(gameObject);
         }
-
-        ChangeMusicVolume(0);
-        ChangeSoundVolume(0);
     }
 
     public void PlaySound(AudioClip _sound)
